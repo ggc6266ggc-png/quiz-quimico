@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missão Química: As Famílias Misteriosas</title>
+<style>
+  * { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Comic Sans MS", sans-serif;
+  background: url('fundo.png') no-repeat center center fixed;
+  background-size: cover;
+  overflow: hidden;
+}
+
+  /* Tela inicial */
+  #startScreen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(#99ccff, #ffffff);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  #startScreen h1 {
+    font-size: 2em;
+    color: #003366;
+    text-shadow: 2px 2px 0 #fff;
+    margin-bottom: 30px;
+  }
+
+  #startBtn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    background-color: #0055aa;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+  }
+
+  #gameArea {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: none;
+  }
+
+  .folha {
+    position: absolute;
+    width: 120px;
+    height: 100px;
+    background-image: url('papel.png');
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+    text-shadow: 1px 1px 2px white;
+  }
+
+  #questionBox {
+    display: none;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    width: 320px;
+    box-shadow: 0 0 20px #000;
+  }
+
+  button {
+    margin: 6px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #e6e6e6;
+    font-weight: bold;
+  }
+
+  .victory, .defeat {
+    color: black;
+    font-size: 28px;
+    text-align: center;
+    margin-top: 40%;
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA INICIAL -->
+<div id="startScreen">
+  <h1>Missão Química 🧪<br>As Famílias Misteriosas</h1>
+  <button id="startBtn">Começar Jogo</button>
+</div>
+
+<!-- ÁREA DO JOGO -->
+<div id="gameArea"></div>
+
+<!-- CAIXA DE PERGUNTAS -->
+<div id="questionBox">
+  <h2 id="questionText"></h2>
+  <div id="options"></div>
+</div>
+
+<script>
+window.onload = function() {
+  const startScreen = document.getElementById('startScreen');
+  const startBtn = document.getElementById('startBtn');
+  const gameArea = document.getElementById('gameArea');
+  const questionBox = document.getElementById('questionBox');
+  const questionText = document.getElementById('questionText');
+  const optionsDiv = document.getElementById('options');
+
+  const questions = [
+    {elemento: "Hélio", familia: "Gases Nobres", opcoes: ["Metais Alcalinos", "Halogênios", "Gases Nobres", "Metais de Transição"]},
+    {elemento: "Sódio", familia: "Metais Alcalinos", opcoes: ["Gases Nobres", "Metais Alcalinos", "Não Metais", "Actinídeos"]},
+    {elemento: "Cálcio", familia: "Metais Alcalino-terrosos", opcoes: ["Halogênios", "Metais Alcalino-terrosos", "Gases Nobres", "Lantanídeos"]},
+    {elemento: "Cloro", familia: "Halogênios", opcoes: ["Metais Alcalinos", "Halogênios", "Metais de Transição", "Gases Nobres"]},
+    {elemento: "Ferro", familia: "Metais de Transição", opcoes: ["Não Metais", "Halogênios", "Metais de Transição", "Gases Nobres"]},
+    {elemento: "Neônio", familia: "Gases Nobres", opcoes: ["Metais Alcalinos", "Halogênios", "Metais de Transição", "Gases Nobres"]},
+    {elemento: "Magnésio", familia: "Metais Alcalino-terrosos", opcoes: ["Gases Nobres", "Halogênios", "Metais Alcalino-terrosos", "Lantanídeos"]},
+    {elemento: "Iodo", familia: "Halogênios", opcoes: ["Metais Alcalinos", "Halogênios", "Gases Nobres", "Não Metais"]},
+    {elemento: "Potássio", familia: "Metais Alcalinos", opcoes: ["Metais Alcalinos", "Halogênios", "Gases Nobres", "Metais de Transição"]},
+    {elemento: "Argônio", familia: "Gases Nobres", opcoes: ["Metais Alcalino-terrosos", "Halogênios", "Metais Alcalinos", "Gases Nobres"]}
+  ];
+
+  let rodada = 0;
+
+  startBtn.onclick = () => {
+    startScreen.style.display = "none";
+    gameArea.style.display = "block";
+    iniciarRodada();
+  };
+
+  function iniciarRodada() {
+    gameArea.innerHTML = "";
+    questionBox.style.display = "none";
+
+    if (rodada >= questions.length) {
+      gameArea.innerHTML = `<div class="victory">O caba inteligente!</div>`;
+      return;
+    }
+
+    const folhas = Math.floor(Math.random() * 2) + 3;
+    for (let i = 0; i < folhas; i++) {
+      const folha = document.createElement('div');
+      folha.className = 'folha';
+      folha.style.top = Math.random() * 80 + "%";
+      folha.style.left = Math.random() * 80 + "%";
+      folha.textContent = `Pista ${i+1}`;
+      folha.onclick = mostrarPergunta;
+      gameArea.appendChild(folha);
+    }
+  }
+
+  function mostrarPergunta() {
+    questionBox.style.display = "block";
+    const q = questions[rodada];
+    questionText.textContent = `Qual é a família do elemento ${q.elemento}?`;
+    optionsDiv.innerHTML = "";
+    q.opcoes.forEach(opcao => {
+      const btn = document.createElement('button');
+      btn.textContent = opcao;
+      btn.onclick = () => verificarResposta(opcao === q.familia);
+      optionsDiv.appendChild(btn);
+    });
+  }
+
+  function verificarResposta(correta) {
+    questionBox.style.display = "none";
+    if (correta) {
+      rodada++;
+      if (rodada === questions.length) {
+        gameArea.innerHTML = `<div class="victory">O caba inteligente!</div>`;
+      } else {
+        gameArea.innerHTML = `<div class="victory">Boa cabeça a sua! Próxima rodada...</div>`;
+        setTimeout(iniciarRodada, 2000);
+      }
+    } else {
+      gameArea.innerHTML = `<div class="defeat">Perdeu, otário! Hahahaha, tenta de novo aí!</div>`;
+      rodada = 0;
+      setTimeout(iniciarRodada, 2500);
+    }
+  }
+};
+</script>
+
+</body>
+</html>
